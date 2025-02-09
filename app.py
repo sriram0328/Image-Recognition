@@ -17,14 +17,14 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # model = YOLO("yolov8l.pt").to(device) #use this for better accuracy and faster results
 # model = YOLO("yolov8n.pt").to(device)  # Smaller model (works on Render Free Plan)
-model = YOLO("ultralytics/yolov8n.pt")  # Automatically downloads model from Ultralytics
+model = YOLO("ultralytics/yolov8l.pt")  # Automatically downloads model from Ultralytics
 
 
 
-def object_detection(image, conf_threshold=0.5):
+def object_detection(image, conf_threshold=0.3):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    max_size = 416
+    max_size = 640
     h, w = image.shape[:2]
     if max(h, w) > max_size:
         scale = max_size / max(h, w)
