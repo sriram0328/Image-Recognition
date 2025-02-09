@@ -21,10 +21,10 @@ model = YOLO("ultralytics/yolov8n.pt")  # Automatically downloads model from Ult
 
 
 
-def object_detection(image, conf_threshold=0.3):
+def object_detection(image, conf_threshold=0.5):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    max_size = 640
+    max_size = 416
     h, w = image.shape[:2]
     if max(h, w) > max_size:
         scale = max_size / max(h, w)
