@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Object Detection</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Add Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Poppins:wght@400;500&family=Rajdhani:wght@700&family=Exo+2:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #121212 0%, #1E1E1E 100%);
+            color: #F8F9FA;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            scroll-behavior: smooth;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(30, 30, 30, 0.8);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            box-sizing: border-box; /* Include padding in width calculation */
+        }
+        h1 {
+            text-align: center;
+            color: #20B2AA;
+            font-size: 2.5em;
+            font-family: 'Rajdhani', sans-serif;
+            text-shadow: 0 0 10px rgba(32, 178, 170, 0.3);
+            margin-bottom: 30px;
+            word-wrap: break-word; /* Allow text to wrap */
+        }
+        .image-area {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .image-box {
+            border: 2px solid rgba(32, 178, 170, 0.2);
+            width: 48%;
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(30, 30, 30, 0.5);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            box-sizing: border-box; /* Include padding and border in width calculation */
+        }
+        .image-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(32, 178, 170, 0.2);
+        }
+        .image-box img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 10px;
+        }
+        .drop-area {
+            border: 2px dashed rgba(32, 178, 170, 0.4);
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 12px;
+            background: rgba(30, 30, 30, 0.5);
+            transition: all 0.3s ease;
+            box-sizing: border-box; /* Include padding and border in width calculation */
+        }
+        .drop-area:hover {
+            background: rgba(32, 178, 170, 0.1);
+            border-color: #20B2AA;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        button {
+            background: linear-gradient(135deg, #20B2AA, #2E8B57, #20B2AA);
+            color: #FFFFFF;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.4s ease;
+            box-shadow: 0 4px 15px rgba(32, 178, 170, 0.3),
+                        inset 0 0 10px rgba(255, 255, 255, 0.2);
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+        }
+        button:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: 0.5s;
+        }
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(32, 178, 170, 0.4),
+                        inset 0 0 15px rgba(255, 255, 255, 0.3);
+            background: linear-gradient(135deg, #1a9690, #246b4d, #1a9690);
+            letter-spacing: 2.5px;
+        }
+        button:hover:before {
+            left: 100%;
+        }
+        button:active {
+            transform: translateY(1px);
+            box-shadow: 0 4px 15px rgba(32, 178, 170, 0.2);
+        }
+        #webcam-container {
+            display: none;
+            margin-top: 30px;
+            width: 100%;
+            text-align: center;
+            scroll-margin-top: 20px;
+        }
+        #video {
+            max-width: 100%;
+            width: 640px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+        }
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #20B2AA;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: none;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Responsive Design */
+        @media screen and (max-width: 768px) {
+            .container {
+                width: 95%;
+                margin-top: 20px;
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+
+            .image-area {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .image-box {
+                width: 100%;
+                height: 300px;
+            }
+
+            .buttons {
+                gap: 10px;
+            }
+
+            button {
+                padding: 8px 15px;
+                font-size: 0.85em;
+                width: 100%;
+                max-width: 200px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .image-box {
+                height: 250px;
+            }
+
+            .drop-area {
+                padding: 20px;
+            }
+
+            button {
+                padding: 8px 16px;
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Recognition</h1>
+
+        <div class="image-area">
+            <div class="image-box" id="upload-image-box">
+                <div class="drop-area" id="drop-area">
+                    <input type="file" id="fileInput" accept="image/*" hidden>
+                    <p>Drop Image Here or Click to Upload</p>
+                </div>
+            </div>
+            <div class="image-box" id="output-box">
+                <p>Output</p>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button id="submit-button">ANALYZE NOW</button>
+            <button id="activate-webcam">CAPTURE CAM</button>
+            <button id="clear-button">CLEAR ALL</button>
+        </div>
+
+        <div id="webcam-container">
+            <video id="video" autoplay></video>
+            <canvas id="canvas" style="display:none;"></canvas>
+            <br>
+            <button id="capture-button" style="margin-top: 20px;margin-bottom: 30px;">CAPTURE</button>
+        </div>
+    </div>
+
+    <script>
+        const dropArea = document.getElementById("drop-area");
+const uploadImageBox = document.getElementById("upload-image-box");
+const outputBox = document.getElementById("output-box");
+const activateWebcam = document.getElementById("activate-webcam");
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
+const captureButton = document.getElementById("capture-button");
+const clearButton = document.getElementById("clear-button");
+const submitButton = document.getElementById("submit-button");
+const webcamContainer = document.getElementById("webcam-container");
+
+let fileInput = document.getElementById("fileInput"); // Store file input reference
+let videoStream = null; // Store webcam stream
+
+// Function to reset file input and make upload clickable again
+function resetFileInput() {
+    let newInput = document.createElement("input");
+    newInput.type = "file";
+    newInput.accept = "image/*";
+    newInput.id = "fileInput";
+    newInput.style.display = "block"; // Make sure it is visible
+    newInput.style.cursor = "pointer";
+
+    fileInput.replaceWith(newInput);
+    fileInput = newInput;
+
+    // Reattach event listener for file selection
+    fileInput.addEventListener("change", handleFileSelect);
+
+    // Restore the drop area after clearing
+    uploadImageBox.innerHTML = `
+        <div class="drop-area" id="drop-area">
+            <p>Drop Image Here</p>
+            <p>-or-</p>
+            <p>Click to Upload</p>
+        </div>
+    `;
+
+    // Make sure clicking the box triggers file selection
+    document.getElementById("drop-area").addEventListener("click", () => fileInput.click());
+}
+
+// Handle file selection & show preview immediately
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            uploadImageBox.innerHTML = `<img src="${e.target.result}" alt="Uploaded Image">`;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+fileInput.addEventListener("change", handleFileSelect);
+dropArea.addEventListener("click", () => fileInput.click());
+
+submitButton.addEventListener("click", () => {
+    if (!fileInput.files.length) {
+        alert("Please select an image first.");
+        return;
+    }
+
+    // Show loader in output box
+    outputBox.innerHTML = '<div class="loader" style="display: inline-block;"></div>';
+
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+
+    fetch("/", { method: "POST", body: formData })
+        .then(response => response.json())
+        .then(data => {
+            outputBox.innerHTML = `<img src="data:image/jpeg;base64,${data.processed_image}" alt="Processed Image">`;
+        })
+        .catch(error => {
+            outputBox.innerHTML = '<p>Error processing image</p>';
+            console.error('Error:', error);
+        });
+});
+
+activateWebcam.addEventListener("click", () => {
+    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+        videoStream = stream;
+        video.srcObject = stream;
+        webcamContainer.style.display = "block";
+        // Scroll to webcam container with smooth behavior
+        webcamContainer.scrollIntoView({ behavior: 'smooth' });
+    });
+});
+
+captureButton.addEventListener("click", () => {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d").drawImage(video, 0, 0);
+    const imageData = canvas.toDataURL("image/jpeg");
+
+    uploadImageBox.innerHTML = `<img src="${imageData}" alt="Captured Image">`;
+
+    // Show loader in output box
+    outputBox.innerHTML = '<div class="loader" style="display: inline-block;"></div>';
+
+    fetch("/", { method: "POST", body: new URLSearchParams({ webcam_data: imageData }) })
+        .then(response => response.json())
+        .then(data => {
+            outputBox.innerHTML = `<img src="data:image/jpeg;base64,${data.processed_image}" alt="Processed Image">`;
+        })
+        .catch(error => {
+            outputBox.innerHTML = '<p>Error processing image</p>';
+            console.error('Error:', error);
+        });
+
+    //  Stop webcam stream after capturing
+    if (videoStream) {
+        videoStream.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
+    }
+
+    // Hide webcam container
+    document.getElementById("webcam-container").style.display = "none";
+});
+
+clearButton.addEventListener("click", () => {
+    // Reset UI
+    uploadImageBox.innerHTML = '<p>Upload an image</p>';
+    outputBox.innerHTML = '<p>Output</p>';
+
+    //  Fully reset file input and bring back upload options
+    resetFileInput();
+});
+
+
+    </script>
+
+</body>
+</html>
