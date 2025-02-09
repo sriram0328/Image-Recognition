@@ -16,7 +16,9 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # model = YOLO("yolov8l.pt").to(device) #use this for better accuracy and faster results
-model = YOLO("yolov8n.pt").to(device)  # Smaller model (works on Render Free Plan)
+# model = YOLO("yolov8n.pt").to(device)  # Smaller model (works on Render Free Plan)
+model = YOLO("ultralytics/yolov8n.pt")  # Automatically downloads model from Ultralytics
+
 
 
 def object_detection(image, conf_threshold=0.3):
