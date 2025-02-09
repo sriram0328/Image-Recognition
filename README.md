@@ -59,7 +59,11 @@ Contributions are welcome! If you'd like to improve this project, follow these s
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+This project is licensed under the MIT License. 
+
+## Contact
+
+For any inquiries or feedback, please reach out to sriramramanadham355@gmail.com 
 
 ---
 
