@@ -15,7 +15,9 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = YOLO("yolov8l.pt").to(device)
+# model = YOLO("yolov8l.pt").to(device) #use this for better accuracy and faster results
+model = YOLO("yolov8n.pt").to(device)  # Smaller model (works on Render Free Plan)
+
 
 def object_detection(image, conf_threshold=0.3):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
